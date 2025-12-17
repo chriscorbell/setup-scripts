@@ -1,0 +1,25 @@
+winget install Microsoft.PowerShell
+winget install 7zip.7zip
+winget install Gyan.FFmpeg
+winget install 9NQ7512CXL7T
+winget install 9N1F85V9T8BN
+winget install Starship.Starship
+winget install Git.Git
+winget install GitHub.GitHubDesktop
+winget install GitHub.cli
+winget install JesseDuffield.lazygit
+winget install Brave.Brave
+winget install Discord.Discord
+winget install Bambulab.Bambustudio
+winget install OBSProject.OBSStudio
+winget install Obsidian.Obsidian
+winget install MPC-BE.MPC-BE
+winget install ente-io.auth-desktop
+winget install Proton.ProtonVPN
+winget install Valve.Steam
+winget install Microsoft.VisualStudioCode
+winget install AutoHotkey.AutoHotkey
+winget install MOTU.MSeries
+winget install Tailscale.Tailscale
+
+wsl --install --no-distribution
