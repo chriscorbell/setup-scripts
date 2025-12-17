@@ -41,7 +41,7 @@ echo
 read -p "$(echo -e '\n\e[32mDo you want to install kernel headers?\n\n\e[33m(Automatically detects appropriate headers package for installed kernels: linux, linux-zen, linux-lts, linux-hardened)\n\n\e[31mNOTE: Kernel headers are necessary for nvidia-dkms!\n\n\e[35mEnter your choice (Y/n):\e[0m ') " install_headers < /dev/tty
 install_headers=${install_headers:-Y}
 
-if [[ $install_headers =~ ^[Yy]$ ]]; then
+if [[ "$install_headers" =~ ^[Yy]$ ]] || [[ -z "$install_headers" ]]; then
     echo -e "\n\e[32mInstalling kernel headers...\e[0m\n"
     
     HEADERS_INSTALLED=false
@@ -93,7 +93,7 @@ case $gpu_choice in
             read -p "$(echo -e '\e[33mDo you want to install kernel headers now? (Y/n):\e[0m ') " install_headers_now < /dev/tty
             install_headers_now=${install_headers_now:-Y}
             
-            if [[ $install_headers_now =~ ^[Yy]$ ]]; then
+            if [[ "$install_headers_now" =~ ^[Yy]$ ]] || [[ -z "$install_headers_now" ]]; then
                 echo -e "\n\e[32mInstalling kernel headers...\e[0m\n"
                 
                 if pacman -Q linux &> /dev/null; then
@@ -173,7 +173,7 @@ echo
 read -p "$(echo -e '\e[32mDo you want to install desktop packages?\n\n\e[33m('${AUR_HELPER}' -S --needed --noconfirm cava celluloid inter-font font-manager kitty brave-bin firefox obs-studio openssh sassc socat ttf-jetbrains-mono-nerd visual-studio-code-bin wine-staging wine-mono winetricks flatpak steam ente-auth-bin bambustudio-bin discord obsidian libappindicator gnome-shell-extension-appindicator network-manager-applet proton-vpn-gtk-app)\n\n\e[35mEnter your choice (Y/n):\e[0m ') " install_desktop < /dev/tty
 install_desktop=${install_desktop:-Y}
 
-if [[ $install_desktop =~ ^[Yy]$ ]]; then
+if [[ "$install_desktop" =~ ^[Yy]$ ]] || [[ "$install_desktop" == "Y" ]] || [[ "$install_desktop" == "y" ]]; then
     DESKTOP_STEPS=3
     DESKTOP_CURRENT=0
     
@@ -199,7 +199,7 @@ echo
 read -p "$(echo -e '\e[32mDo you want to install tailscale?\n\n\e[35mEnter your choice (Y/n):\e[0m ') " install_tailscale < /dev/tty
 install_tailscale=${install_tailscale:-Y}
 
-if [[ $install_tailscale =~ ^[Yy]$ ]]; then
+if [[ "$install_tailscale" =~ ^[Yy]$ ]] || [[ -z "$install_tailscale" ]]; then
     echo -e "\n\e[32mInstalling Tailscale...\e[0m\n"
     if ! curl -fsSL https://tailscale.com/install.sh | sh; then
         echo -e "\e[31mError: Failed to install Tailscale\e[0m"
@@ -211,7 +211,7 @@ echo
 read -p "$(echo -e '\e[32mDo you want to install KVM/QEMU/Virt Manager?\n\n\e[35mEnter your choice (Y/n):\e[0m ') " install_kvm < /dev/tty
 install_kvm=${install_kvm:-Y}
 
-if [[ $install_kvm =~ ^[Yy]$ ]]; then
+if [[ "$install_kvm" =~ ^[Yy]$ ]] || [[ -z "$install_kvm" ]]; then
     KVM_STEPS=7
     KVM_CURRENT=0
     
