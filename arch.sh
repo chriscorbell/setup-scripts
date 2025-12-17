@@ -1,6 +1,7 @@
 #!/bin/bash
 
-set -e  # Exit on error
+# Exit on error, but allow us to handle errors manually where needed
+set -eo pipefail
 
 # Color codes
 RED='\033[0;31m'
@@ -182,16 +183,16 @@ if [[ "$install_desktop" =~ ^[Yy]$ ]] || [[ "$install_desktop" == "Y" ]] || [[ "
     echo -e "\n\e[32m[$DESKTOP_CURRENT/$DESKTOP_STEPS] Enabling multilib repository...\e[0m\n"
     if ! grep -q "^\[multilib\]" /etc/pacman.conf; then
         sudo sed -i '/^#\[multilib\]/,/^#Include = \/etc\/pacman.d\/mirrorlist/ s/^#//' /etc/pacman.conf
-        sudo pacman -Sy
+        sudo pacman -Sy || echo -e "\e[33mWarning: Failed to sync repositories\e[0m"
     fi
     
     ((DESKTOP_CURRENT++))
     echo -e "\n\e[32m[$DESKTOP_CURRENT/$DESKTOP_STEPS] Updating package lists...\e[0m\n"
-    ${AUR_HELPER} -Syu --noconfirm
+    ${AUR_HELPER} -Syu --noconfirm || echo -e "\e[33mWarning: System update had issues\e[0m"
     
     ((DESKTOP_CURRENT++))
     echo -e "\n\e[32m[$DESKTOP_CURRENT/$DESKTOP_STEPS] Installing desktop packages...\e[0m\n"
-    ${AUR_HELPER} -S --needed --noconfirm cava celluloid inter-font font-manager kitty brave-bin firefox obs-studio openssh sassc socat ttf-jetbrains-mono-nerd visual-studio-code-bin wine-staging wine-mono winetricks flatpak steam ente-auth-bin bambustudio-bin discord obsidian libappindicator gnome-shell-extension-appindicator network-manager-applet proton-vpn-gtk-app
+    ${AUR_HELPER} -S --needed --noconfirm cava celluloid inter-font font-manager kitty brave-bin firefox obs-studio openssh sassc socat ttf-jetbrains-mono-nerd visual-studio-code-bin wine-staging wine-mono winetricks flatpak steam ente-auth-bin bambustudio-bin discord obsidian libappindicator gnome-shell-extension-appindicator network-manager-applet proton-vpn-gtk-app || echo -e "\e[33mWarning: Some packages may have failed to install\e[0m"
 fi
 
 # Tailscale
