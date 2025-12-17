@@ -215,7 +215,7 @@ if [[ $install_kvm =~ ^[Yy]$ ]]; then
     
     ((KVM_CURRENT++))
     echo -e "\n\e[32m[$KVM_CURRENT/$KVM_STEPS] Installing KVM/QEMU packages...\e[0m\n"
-    sudo pacman -S --needed --noconfirm qemu virt-manager virt-viewer dnsmasq vde2 bridge-utils openbsd-netcat dmidecode iptables-nft libguestfs
+    sudo pacman -S --needed --noconfirm qemu virt-manager virt-viewer dnsmasq vde2 bridge-utils openbsd-netcat dmidecode libguestfs
     
     ((KVM_CURRENT++))
     echo -e "\n\e[32m[$KVM_CURRENT/$KVM_STEPS] Configuring libvirt for standard user accounts...\e[0m\n"
