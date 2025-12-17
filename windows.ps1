@@ -1,13 +1,16 @@
+winget upgrade --all
 winget install Microsoft.PowerShell
 winget install 7zip.7zip
 winget install Gyan.FFmpeg
 winget install 9NQ7512CXL7T
 winget install 9N1F85V9T8BN
+winget install Microsoft.Teams
 winget install Starship.Starship
 winget install Git.Git
 winget install GitHub.GitHubDesktop
 winget install GitHub.cli
 winget install JesseDuffield.lazygit
+winget install Ollama.Ollama
 winget install Brave.Brave
 winget install Discord.Discord
 winget install Bambulab.Bambustudio
@@ -21,5 +24,4 @@ winget install Microsoft.VisualStudioCode
 winget install AutoHotkey.AutoHotkey
 winget install MOTU.MSeries
 winget install Tailscale.Tailscale
-
 wsl --install --no-distribution
