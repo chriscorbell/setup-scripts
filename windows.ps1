@@ -24,4 +24,5 @@ winget install Microsoft.VisualStudioCode
 winget install AutoHotkey.AutoHotkey
 winget install MOTU.MSeries
 winget install Tailscale.Tailscale
+winget install Parsec.Parsec
 wsl --install --no-distribution
