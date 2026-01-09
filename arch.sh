@@ -168,7 +168,7 @@ esac
 
 # Desktop packages
 echo
-read -p "$(echo -e '\e[32mDo you want to install desktop packages?\n\n\e[33m('${AUR_HELPER}' -S --needed --noconfirm cava celluloid inter-font font-manager kitty brave-bin firefox obs-studio openssh sassc socat ttf-jetbrains-mono-nerd visual-studio-code-bin wine-staging wine-mono winetricks flatpak steam ente-auth-bin bambustudio-bin discord obsidian libappindicator gnome-shell-extension-appindicator network-manager-applet proton-vpn-gtk-app)\n\n\e[35mEnter your choice (Y/n):\e[0m ') " install_desktop < /dev/tty
+read -p "$(echo -e '\e[32mDo you want to install desktop packages?\n\n\e[33m('${AUR_HELPER}' -S --needed --noconfirm cava celluloid inter-font font-manager kitty helium-browser-bin obs-studio openssh sassc socat ttf-jetbrains-mono-nerd visual-studio-code-bin wine-staging wine-mono winetricks flatpak steam ente-auth-bin bambustudio-bin discord obsidian gnome-boxes libappindicator gnome-shell-extension-appindicator network-manager-applet proton-vpn-gtk-app)\n\n\e[35mEnter your choice (Y/n):\e[0m ') " install_desktop < /dev/tty
 install_desktop=${install_desktop:-Y}
 
 if [[ $install_desktop =~ ^[Yy]$ ]]; then
@@ -189,7 +189,7 @@ if [[ $install_desktop =~ ^[Yy]$ ]]; then
     
     ((DESKTOP_CURRENT++))
     echo -e "\n\e[32m[$DESKTOP_CURRENT/$DESKTOP_STEPS] Installing desktop packages...\e[0m\n"
-    ${AUR_HELPER} -S --needed --noconfirm cava celluloid inter-font font-manager kitty brave-bin firefox obs-studio openssh sassc socat ttf-jetbrains-mono-nerd visual-studio-code-bin wine-staging wine-mono winetricks flatpak steam ente-auth-bin bambustudio-bin discord obsidian libappindicator gnome-shell-extension-appindicator network-manager-applet proton-vpn-gtk-app
+    ${AUR_HELPER} -S --needed --noconfirm cava celluloid inter-font font-manager kitty helium-browser-bin obs-studio openssh sassc socat ttf-jetbrains-mono-nerd visual-studio-code-bin wine-staging wine-mono winetricks flatpak steam ente-auth-bin bambustudio-bin discord obsidian gnome-boxes libappindicator gnome-shell-extension-appindicator network-manager-applet proton-vpn-gtk-app
 fi
 
 # Tailscale
@@ -201,102 +201,6 @@ if [[ $install_tailscale =~ ^[Yy]$ ]]; then
     echo -e "\n\e[32mInstalling Tailscale...\e[0m\n"
     if ! curl -fsSL https://tailscale.com/install.sh | sh; then
         echo -e "\e[31mError: Failed to install Tailscale\e[0m"
-    fi
-fi
-
-# KVM/QEMU/Virt Manager
-echo
-read -p "$(echo -e '\e[32mDo you want to install KVM/QEMU/Virt Manager?\n\n\e[35mEnter your choice (Y/n):\e[0m ') " install_kvm < /dev/tty
-install_kvm=${install_kvm:-Y}
-
-if [[ $install_kvm =~ ^[Yy]$ ]]; then
-    KVM_STEPS=7
-    KVM_CURRENT=0
-    
-    ((KVM_CURRENT++))
-    echo -e "\n\e[32m[$KVM_CURRENT/$KVM_STEPS] Installing KVM/QEMU packages...\e[0m\n"
-    sudo pacman -S --needed --noconfirm qemu virt-manager virt-viewer dnsmasq vde2 bridge-utils openbsd-netcat dmidecode libguestfs
-    
-    ((KVM_CURRENT++))
-    echo -e "\n\e[32m[$KVM_CURRENT/$KVM_STEPS] Configuring libvirt for standard user accounts...\e[0m\n"
-    
-    # Configure UNIX domain socket group ownership
-    if ! grep -q '^unix_sock_group = "libvirt"' /etc/libvirt/libvirtd.conf 2>/dev/null; then
-        if grep -q '^#unix_sock_group' /etc/libvirt/libvirtd.conf 2>/dev/null; then
-            sudo sed -i 's/^#unix_sock_group.*/unix_sock_group = "libvirt"/' /etc/libvirt/libvirtd.conf
-        else
-            echo 'unix_sock_group = "libvirt"' | sudo tee -a /etc/libvirt/libvirtd.conf > /dev/null
-        fi
-    fi
-    
-    # Configure UNIX socket permissions
-    if ! grep -q '^unix_sock_rw_perms = "0770"' /etc/libvirt/libvirtd.conf 2>/dev/null; then
-        if grep -q '^#unix_sock_rw_perms' /etc/libvirt/libvirtd.conf 2>/dev/null; then
-            sudo sed -i 's/^#unix_sock_rw_perms.*/unix_sock_rw_perms = "0770"/' /etc/libvirt/libvirtd.conf
-        else
-            echo 'unix_sock_rw_perms = "0770"' | sudo tee -a /etc/libvirt/libvirtd.conf > /dev/null
-        fi
-    fi
-    
-    ((KVM_CURRENT++))
-    echo -e "\n\e[32m[$KVM_CURRENT/$KVM_STEPS] Adding user to libvirt group...\e[0m\n"
-    
-    if ! groups | grep -q '\blibvirt\b'; then
-        sudo usermod -a -G libvirt $(whoami)
-        echo -e "\e[33mNote: You'll need to log out and back in for group membership to take effect\e[0m"
-    fi
-    
-    ((KVM_CURRENT++))
-    echo -e "\n\e[32m[$KVM_CURRENT/$KVM_STEPS] Enabling and restarting libvirtd service...\e[0m\n"
-    sudo systemctl enable libvirtd.service
-    sudo systemctl restart libvirtd.service
-    
-    ((KVM_CURRENT++))
-    echo -e "\n\e[32m[$KVM_CURRENT/$KVM_STEPS] Detecting CPU vendor for nested virtualization...\e[0m\n"
-    
-    # Detect CPU vendor
-    CPU_VENDOR=""
-    KVM_MODULE=""
-    
-    if grep -q "GenuineIntel" /proc/cpuinfo; then
-        CPU_VENDOR="intel"
-        KVM_MODULE="kvm_intel"
-        echo -e "\e[33mDetected Intel processor\e[0m"
-    elif grep -q "AuthenticAMD" /proc/cpuinfo; then
-        CPU_VENDOR="amd"
-        KVM_MODULE="kvm_amd"
-        echo -e "\e[33mDetected AMD processor\e[0m"
-    else
-        echo -e "\e[31mCould not detect CPU vendor, skipping nested virtualization setup\e[0m"
-    fi
-    
-    if [ -n "$CPU_VENDOR" ]; then
-        ((KVM_CURRENT++))
-        echo -e "\n\e[32m[$KVM_CURRENT/$KVM_STEPS] Enabling nested virtualization for $CPU_VENDOR...\e[0m\n"
-        
-        # Check if module is loaded and reload with nested=1
-        if lsmod | grep -q "^$KVM_MODULE"; then
-            sudo modprobe -r $KVM_MODULE 2>/dev/null || true
-        fi
-        sudo modprobe $KVM_MODULE nested=1
-        
-        ((KVM_CURRENT++))
-        echo -e "\n\e[32m[$KVM_CURRENT/$KVM_STEPS] Making nested virtualization persistent...\e[0m\n"
-        
-        # Make configuration persistent
-        if [ ! -f /etc/modprobe.d/$KVM_MODULE.conf ] || ! grep -q "options $KVM_MODULE nested=1" /etc/modprobe.d/$KVM_MODULE.conf; then
-            echo "options $KVM_MODULE nested=1" | sudo tee /etc/modprobe.d/$KVM_MODULE.conf > /dev/null
-        fi
-        
-        # Verify nested virtualization is enabled
-        if [ "$CPU_VENDOR" = "intel" ]; then
-            NESTED_STATUS=$(cat /sys/module/kvm_intel/parameters/nested 2>/dev/null || echo "unknown")
-        else
-            NESTED_STATUS=$(cat /sys/module/kvm_amd/parameters/nested 2>/dev/null || echo "unknown")
-        fi
-        echo -e "\e[33mNested virtualization status: $NESTED_STATUS\e[0m"
-    else
-        echo -e "\e[33mSkipping nested virtualization steps (CPU vendor unknown)\e[0m"
     fi
 fi
 
