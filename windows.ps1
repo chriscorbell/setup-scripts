@@ -42,8 +42,10 @@ New-Item -ItemType Directory -Path "$HOME\.config" -Force | Out-Null; Invoke-Web
 # Install Bun
 powershell -c "irm bun.sh/install.ps1|iex"
 
-# Install uv
+# Install uv + python
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+$env:Path = "$HOME\.local\bin;$env:Path"
+uv python install
 
 # Restore classic right-click menu
 reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
