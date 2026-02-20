@@ -1,74 +1,56 @@
-# Need to auto-elevate privileges if needed
-$IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
-).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-
-if (-not $IsAdmin) {
-    Start-Process powershell -Verb RunAs -ArgumentList @(
-        '-NoProfile',
-        '-ExecutionPolicy', 'Bypass',
-        '-Command', "irm https://raw.githubusercontent.com/chriscorbell/setup-scripts/main/windows.ps1 | iex"
-    )
-    exit
-}
+# Need to disable UAC first
+Write-Host "Press any key to open UAC settings, then disable UAC by changing the slider to 'Never notify'" -ForegroundColor Cyan
+$Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') | Out-Null
+useraccountcontrolsettings
+Write-Host "Confirm UAC is disabled, then press any key to continue" -ForegroundColor Yellow
+$Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') | Out-Null
 
 # Set execution policy
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
 
 # Define function for setting registry keys
-function Set-Dword($Path, $Name, $Value) {
-    New-Item -Path $Path -Force | Out-Null
-    New-ItemProperty -Path $Path -Name $Name -PropertyType DWord -Value $Value -Force | Out-Null
+function Set-DwordReg($KeyPath, $Name, $Value) {
+    reg.exe add $KeyPath /v $Name /t REG_DWORD /d $Value /f | Out-Null
 }
 
 # Remove all pinned apps from taskbar
-# Taskband key may be missing in newer Windows 11 builds, so handle both cases: https://www.elevenforum.com/t/reset-and-clear-pinned-items-on-taskbar-in-windows-11.3634
 $taskbarPins = Join-Path $env:APPDATA "Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
 if (Test-Path $taskbarPins) {
     Remove-Item -Path (Join-Path $taskbarPins "*") -Force -ErrorAction SilentlyContinue
 }
 
-$taskbandKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband"
-if (Test-Path $taskbandKey) {
-    Remove-Item -Path $taskbandKey -Recurse -Force -ErrorAction SilentlyContinue
-}
+# Also try deleting Taskband state (may not exist on newer builds)
+reg.exe delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband" /f 2>$null | Out-Null
 
-# Taskbar: Search = Hide (plus Cache to prevent Windows re-migrating defaults)
-Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "SearchboxTaskbarMode" 0
-Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "SearchboxTaskbarModeCache" 1
-# SearchboxTaskbarMode + Cache behavior documented here: https://awakecoding.com/posts/disabling-the-windows-11-taskbar-search-box-for-all-users/)[3](https://learn.microsoft.com/en-us/answers/questions/1726171/trying-to-hid-the-search-bar-for-all-users-using-r
+# Search = Hide (plus cache)
+Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" "SearchboxTaskbarMode" 0
+Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" "SearchboxTaskbarModeCache" 1
 
-# Taskbar: Task View = Off
-Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "ShowTaskViewButton" 0
+# Task View off / Widgets off
+Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "ShowTaskViewButton" 0
+Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "TaskbarDa" 0
 
-# Taskbar: Widgets = Off
-Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "TaskbarDa" 0
+# Start: More pins
+Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Start_Layout" 1
 
-# Start: Layout = More pins (1)
-Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Start_Layout" 1
+# Start: disable “recently added”
+Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Start" "ShowRecentList" 0
 
-# Start: Disable “Show recently added apps”
-Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Start" "ShowRecentList" 0
+# Start/Explorer/Jump lists: disable recents
+Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Start_TrackDocs" 0
 
-# Start/Explorer/Jump Lists: Disable “recommended files / recents”
-Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Start_TrackDocs" 0
+# Start: disable websites from browsing history (policy)
+Set-DwordReg "HKCU\Software\Policies\Microsoft\Windows\Explorer" "HideRecommendedPersonalizedSites" 1
 
-# Start: Disable “websites from browsing history” (policy)
-Set-Dword "HKCU:\Software\Policies\Microsoft\Windows\Explorer" "HideRecommendedPersonalizedSites" 1
+# Start: disable “tips/shortcuts/new apps”
+Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Start_IrisRecommendations" 0
 
-# Start: Disable “tips/shortcuts/new apps recommendations”
-Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Start_IrisRecommendations" 0
+# Start: disable account notifications
+Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Start_AccountNotifications" 0
 
-# Start: Disable “account-related notifications”
-Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Start_AccountNotifications" 0
-
-# File Explorer: Enable compact view
-Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "UseCompactMode" 1
-
-# File Explorer: Show file extensions
-Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "HideFileExt" 0
-
-# Restore classic right-click menu
-reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
+# Explorer: compact view + file extensions
+Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "UseCompactMode" 1
+Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "HideFileExt" 0
 
 # Apply changes: restart Explorer
 Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
