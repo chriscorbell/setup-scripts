@@ -2,6 +2,7 @@
 Write-Host "Press any key to open UAC settings, then disable UAC by changing the slider to 'Never notify'" -ForegroundColor Cyan
 $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') | Out-Null
 useraccountcontrolsettings
+Start-Sleep -Milliseconds 2000
 Write-Host "Confirm UAC is disabled, then press any key to continue" -ForegroundColor Yellow
 $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') | Out-Null
 
