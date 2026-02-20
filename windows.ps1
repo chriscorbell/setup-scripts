@@ -8,11 +8,68 @@ $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') | Out-Null
 # Set execution policy
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
 
-# Set Dark Theme
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0
+# Define function for setting registry keys
+function Set-Dword($Path, $Name, $Value) {
+    New-Item -Path $Path -Force | Out-Null
+    New-ItemProperty -Path $Path -Name $Name -PropertyType DWord -Value $Value -Force | Out-Null
+}
 
-# Remove bloat
+# Remove all pinned apps from taskbar
+# Taskband key may be missing in newer Windows 11 builds, so handle both cases: https://www.elevenforum.com/t/reset-and-clear-pinned-items-on-taskbar-in-windows-11.3634
+$taskbarPins = Join-Path $env:APPDATA "Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
+if (Test-Path $taskbarPins) {
+    Remove-Item -Path (Join-Path $taskbarPins "*") -Force -ErrorAction SilentlyContinue
+}
+
+$taskbandKey = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband"
+if (Test-Path $taskbandKey) {
+    Remove-Item -Path $taskbandKey -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+# Taskbar: Search = Hide (plus Cache to prevent Windows re-migrating defaults)
+Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "SearchboxTaskbarMode" 0
+Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" "SearchboxTaskbarModeCache" 1
+# SearchboxTaskbarMode + Cache behavior documented here: https://awakecoding.com/posts/disabling-the-windows-11-taskbar-search-box-for-all-users/)[3](https://learn.microsoft.com/en-us/answers/questions/1726171/trying-to-hid-the-search-bar-for-all-users-using-r
+
+# Taskbar: Task View = Off
+Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "ShowTaskViewButton" 0
+
+# Taskbar: Widgets = Off
+Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "TaskbarDa" 0
+
+# Start: Layout = More pins (1)
+Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Start_Layout" 1
+
+# Start: Disable “Show recently added apps”
+Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Start" "ShowRecentList" 0
+
+# Start/Explorer/Jump Lists: Disable “recommended files / recents”
+Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Start_TrackDocs" 0
+
+# Start: Disable “websites from browsing history” (policy)
+Set-Dword "HKCU:\Software\Policies\Microsoft\Windows\Explorer" "HideRecommendedPersonalizedSites" 1
+
+# Start: Disable “tips/shortcuts/new apps recommendations”
+Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Start_IrisRecommendations" 0
+
+# Start: Disable “account-related notifications”
+Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Start_AccountNotifications" 0
+
+# File Explorer: Enable compact view
+Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "UseCompactMode" 1
+
+# File Explorer: Show file extensions
+Set-Dword "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "HideFileExt" 0
+
+# Restore classic right-click menu
+reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
+
+# Apply changes: restart Explorer
+Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+Start-Sleep -Milliseconds 800
+Start-Process explorer.exe
+
+# Remove bloatware
 Get-AppxPackage -Name "Clipchamp.Clipchamp" | Remove-AppxPackage
 Get-AppxPackage -Name "Microsoft.BingNews" | Remove-AppxPackage
 Get-AppxPackage -Name "Microsoft.BingWeather" | Remove-AppxPackage
@@ -33,7 +90,7 @@ Get-AppxPackage -Name "Microsoft.YourPhone" | Remove-AppxPackage
 Get-AppxPackage -Name "Microsoft.ZuneMusic" | Remove-AppxPackage
 Get-AppxPackage -Name "MicrosoftCorporationII.QuickAssist" | Remove-AppxPackage
 
-# Update source
+# Update winget sources
 winget source update
 
 # Update existing apps
@@ -74,11 +131,11 @@ winget install Adobe.CreativeCloud --accept-source-agreements --accept-package-a
 winget remove Microsoft.OneDrive
 winget remove Microsoft.CommandPalette
 
-# Set PATH
-$env:Path = "$HOME\.local\bin;$HOME\AppData\Local\Microsoft\WinGet\Packages\ajeetdsouza.zoxide_Micorosft.Winget.Source_8wekyb3d8bbwe;C:\Program Files\starship\bin;$env:Path"
-
 # Install WSL2
 wsl --install --no-distribution
+
+# Temporarily set PATH
+$env:Path = "$HOME\.local\bin;$HOME\AppData\Local\Microsoft\WinGet\Packages\ajeetdsouza.zoxide_Micorosft.Winget.Source_8wekyb3d8bbwe;C:\Program Files\starship\bin;$env:Path"
 
 # Pull Starship config
 New-Item -ItemType Directory -Path "$HOME\.config" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles/main/.config/starship.toml" -OutFile "$HOME\.config\starship.toml"
@@ -96,6 +153,3 @@ powershell -c "irm bun.sh/install.ps1|iex"
 # Install uv + python
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 uv python install
-
-# Restore classic right-click menu
-reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
