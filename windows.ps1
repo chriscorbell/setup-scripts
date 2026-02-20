@@ -5,6 +5,9 @@ useraccountcontrolsettings
 Write-Host "Confirm UAC is disabled, then press any key to continue" -ForegroundColor Yellow
 $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') | Out-Null
 
+# Set execution policy
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
+
 # Set Dark Theme
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0
