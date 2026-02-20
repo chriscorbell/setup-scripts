@@ -44,7 +44,6 @@ winget install 9N1F85V9T8BN --accept-source-agreements --accept-package-agreemen
 winget install Microsoft.Teams --accept-source-agreements --accept-package-agreements
 winget install Microsoft.Office --accept-source-agreements --accept-package-agreements
 winget install Starship.Starship --accept-source-agreements --accept-package-agreements
-$env:Path = "C:\Program Files\starship\bin;$env:Path"
 winget install ajeetdsouza.zoxide --accept-source-agreements --accept-package-agreements
 winget install CrystalDewWorld.CrystalDiskInfo --accept-source-agreements --accept-package-agreements
 winget install CrystalDewWorld.CrystalDiskMark --accept-source-agreements --accept-package-agreements
@@ -71,6 +70,9 @@ winget install Adobe.CreativeCloud --accept-source-agreements --accept-package-a
 winget remove Microsoft.OneDrive
 winget remove Microsoft.CommandPalette
 
+# Set PATH
+$env:Path = "$HOME\.local\bin;$HOME\AppData\Local\Microsoft\WinGet\Packages\ajeetdsouza.zoxide_Micorosft.Winget.Source_8wekyb3d8bbwe;C:\Program Files\starship\bin;$env:Path"
+
 # Install WSL2
 wsl --install --no-distribution
 
@@ -86,7 +88,6 @@ powershell -c "irm bun.sh/install.ps1|iex"
 
 # Install uv + python
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-$env:Path = "$HOME\.local\bin;$env:Path"
 uv python install
 
 # Restore classic right-click menu
