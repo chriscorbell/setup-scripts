@@ -22,11 +22,6 @@ $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') | Out-Null
 # Set execution policy
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
 
-# Define function for setting registry keys
-function Set-DwordReg($KeyPath, $Name, $Value) {
-    reg.exe add $KeyPath /v $Name /t REG_DWORD /d $Value /f | Out-Null
-}
-
 # Remove all pinned apps from taskbar
 $taskbarPins = Join-Path $env:APPDATA "Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
 if (Test-Path $taskbarPins) {
@@ -37,34 +32,36 @@ if (Test-Path $taskbarPins) {
 reg.exe delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband" /f 2>$null | Out-Null
 
 # Search = Hide (plus cache)
-Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" "SearchboxTaskbarMode" 0
-Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" "SearchboxTaskbarModeCache" 1
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "SearchboxTaskbarMode"      /t REG_DWORD /d 0 /f | Out-Null
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "SearchboxTaskbarModeCache" /t REG_DWORD /d 1 /f | Out-Null
 
-# Task View off / Widgets off
-Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "ShowTaskViewButton" 0
-Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "TaskbarDa" 0
+# Task View off
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "ShowTaskViewButton" /t REG_DWORD /d 0 /f | Out-Null
+
+# Widgets off
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarDa" /t REG_DWORD /d 0 /f | Out-Null
 
 # Start: More pins
-Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Start_Layout" 1
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_Layout" /t REG_DWORD /d 1 /f | Out-Null
 
 # Start: disable “recently added”
-Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Start" "ShowRecentList" 0
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Start" /v "ShowRecentList" /t REG_DWORD /d 0 /f | Out-Null
 
 # Start/Explorer/Jump lists: disable recents
-Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Start_TrackDocs" 0
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_TrackDocs" /t REG_DWORD /d 0 /f | Out-Null
 
 # Start: disable websites from browsing history (policy)
-Set-DwordReg "HKCU\Software\Policies\Microsoft\Windows\Explorer" "HideRecommendedPersonalizedSites" 1
+reg.exe add "HKCU\Software\Policies\Microsoft\Windows\Explorer" /v "HideRecommendedPersonalizedSites" /t REG_DWORD /d 1 /f | Out-Null
 
 # Start: disable “tips/shortcuts/new apps”
-Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Start_IrisRecommendations" 0
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_IrisRecommendations" /t REG_DWORD /d 0 /f | Out-Null
 
 # Start: disable account notifications
-Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "Start_AccountNotifications" 0
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_AccountNotifications" /t REG_DWORD /d 0 /f | Out-Null
 
 # Explorer: compact view + file extensions
-Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "UseCompactMode" 1
-Set-DwordReg "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" "HideFileExt" 0
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "UseCompactMode" /t REG_DWORD /d 1 /f | Out-Null
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "HideFileExt"    /t REG_DWORD /d 0 /f | Out-Null
 
 # Apply changes: restart Explorer
 Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
@@ -91,6 +88,7 @@ Get-AppxPackage -Name "Microsoft.WindowsSoundRecorder" | Remove-AppxPackage
 Get-AppxPackage -Name "Microsoft.YourPhone" | Remove-AppxPackage
 Get-AppxPackage -Name "Microsoft.ZuneMusic" | Remove-AppxPackage
 Get-AppxPackage -Name "MicrosoftCorporationII.QuickAssist" | Remove-AppxPackage
+winget remove Microsoft.Teams
 
 # Update winget sources
 winget source update
