@@ -48,6 +48,7 @@ winget install Microsoft.Teams --accept-source-agreements --accept-package-agree
 winget install Microsoft.Office --accept-source-agreements --accept-package-agreements
 winget install Starship.Starship --accept-source-agreements --accept-package-agreements
 winget install ajeetdsouza.zoxide --accept-source-agreements --accept-package-agreements
+winget install DEVCOM.JetBrainsMonoNerdFont --accept-source-agreements --accept-package-agreements
 winget install CrystalDewWorld.CrystalDiskInfo --accept-source-agreements --accept-package-agreements
 winget install CrystalDewWorld.CrystalDiskMark --accept-source-agreements --accept-package-agreements
 winget install ImputNet.Helium --accept-source-agreements --accept-package-agreements
@@ -80,11 +81,14 @@ $env:Path = "$HOME\.local\bin;$HOME\AppData\Local\Microsoft\WinGet\Packages\ajee
 wsl --install --no-distribution
 
 # Pull Starship config
-New-Item -ItemType Directory -Path "$HOME\.config" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles/refs/heads/main/.config/starship.toml" -OutFile "$HOME\.config\starship.toml"
+New-Item -ItemType Directory -Path "$HOME\.config" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles/main/.config/starship.toml" -OutFile "$HOME\.config\starship.toml"
 
 # Pull PowerShell profile
-New-Item -ItemType Directory -Path "$HOME\Documents\PowerShell" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles-windows/refs/heads/main/Microsoft.PowerShell_profile.ps1" -OutFile "$HOME\Documents\PowerShell\Microsoft.PowerShell_profile.ps1"
-New-Item -ItemType Directory -Path "$HOME\Documents\WindowsPowerShell" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles-windows/refs/heads/main/Microsoft.PowerShell_profile.ps1" -OutFile "$HOME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+New-Item -ItemType Directory -Path "$HOME\Documents\PowerShell" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles-windows/main/Microsoft.PowerShell_profile.ps1" -OutFile "$HOME\Documents\PowerShell\Microsoft.PowerShell_profile.ps1"
+New-Item -ItemType Directory -Path "$HOME\Documents\WindowsPowerShell" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles-windows/main/Microsoft.PowerShell_profile.ps1" -OutFile "$HOME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+
+# Pull Windows Terminal config
+New-Item -ItemType Directory -Path "$HOME\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles-windows/main/settings.json" -OutFile "$HOME\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
 
 # Install Bun
 powershell -c "irm bun.sh/install.ps1|iex"
