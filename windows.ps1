@@ -1,15 +1,15 @@
 # Need to auto-elevate privileges if needed
-# $IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
-# ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+$IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
+).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
-# if (-not $IsAdmin) {
-#     Start-Process powershell -Verb RunAs -ArgumentList @(
-#         '-NoProfile',
-#         '-ExecutionPolicy', 'Bypass',
-#         '-Command', "irm https://raw.githubusercontent.com/chriscorbell/setup-scripts/main/windows.ps1 | iex"
-#     )
-#     exit
-# }
+if (-not $IsAdmin) {
+    Start-Process powershell -Verb RunAs -ArgumentList @(
+        '-NoProfile',
+        '-ExecutionPolicy', 'Bypass',
+        '-Command', "irm https://raw.githubusercontent.com/chriscorbell/setup-scripts/main/windows.ps1 | iex"
+    )
+    exit
+}
 
 # Disable UAC
 Write-Host "Press any key to open UAC settings, then disable UAC by changing the slider to 'Never notify'" -ForegroundColor Cyan
@@ -39,8 +39,7 @@ reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "Searchbo
 reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "ShowTaskViewButton" /t REG_DWORD /d 0 /f | Out-Null
 
 # Widgets off
-reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /f | Out-Null
-reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "TaskbarDa" /t REG_DWORD /d 0 /f | Out-Null
+reg.exe add "HKLM\Software\Policies\Microsoft\Dsh" /v "AllowNewsAndInterests" /t REG_DWORD /d 0 /f | Out-Null
 
 # Start: More pins
 reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_Layout" /t REG_DWORD /d 1 /f | Out-Null
