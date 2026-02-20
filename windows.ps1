@@ -44,6 +44,7 @@ winget install 9N1F85V9T8BN --accept-source-agreements --accept-package-agreemen
 winget install Microsoft.Teams --accept-source-agreements --accept-package-agreements
 winget install Microsoft.Office --accept-source-agreements --accept-package-agreements
 winget install Starship.Starship --accept-source-agreements --accept-package-agreements
+$env:Path = "C:\Program Files\starship\bin;$env:Path"
 winget install ajeetdsouza.zoxide --accept-source-agreements --accept-package-agreements
 winget install CrystalDewWorld.CrystalDiskInfo --accept-source-agreements --accept-package-agreements
 winget install CrystalDewWorld.CrystalDiskMark --accept-source-agreements --accept-package-agreements
