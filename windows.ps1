@@ -34,3 +34,6 @@ winget install Tailscale.Tailscale
 winget install Microsoft.PowerToys
 winget install Adobe.CreativeCloud
 wsl --install --no-distribution
+
+# Restore classic right-click menu
+reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
