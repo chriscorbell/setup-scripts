@@ -10,7 +10,6 @@ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\P
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0
 
 # Remove bloat
-winget remove Microsoft.OneDrive
 Get-AppxPackage -Name "Clipchamp.Clipchamp" | Remove-AppxPackage
 Get-AppxPackage -Name "Microsoft.BingNews" | Remove-AppxPackage
 Get-AppxPackage -Name "Microsoft.BingWeather" | Remove-AppxPackage
@@ -68,6 +67,8 @@ winget install MOTU.MSeries --accept-source-agreements --accept-package-agreemen
 winget install Tailscale.Tailscale --accept-source-agreements --accept-package-agreements
 winget install Microsoft.PowerToys --accept-source-agreements --accept-package-agreements
 winget install Adobe.CreativeCloud --accept-source-agreements --accept-package-agreements
+winget remove Microsoft.OneDrive
+winget remove Microsoft.CommandPalette
 
 # Install WSL2
 wsl --install --no-distribution
