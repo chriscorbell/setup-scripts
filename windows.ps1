@@ -37,6 +37,7 @@ winget upgrade --all
 # Install new apps
 winget install 7zip.7zip
 winget install Gyan.FFmpeg
+winget install Microsoft.PowerShell
 winget install 9N1F85V9T8BN
 winget install Microsoft.Teams
 winget install Microsoft.Office
