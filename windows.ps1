@@ -1,4 +1,17 @@
-# Need to disable UAC first
+# Need to auto-elevate privileges if needed
+$IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
+).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+if (-not $IsAdmin) {
+    Start-Process powershell -Verb RunAs -ArgumentList @(
+        '-NoProfile',
+        '-ExecutionPolicy', 'Bypass',
+        '-Command', "irm https://raw.githubusercontent.com/chriscorbell/setup-scripts/main/windows.ps1 | iex"
+    )
+    exit
+}
+
+# Disable UAC
 Write-Host "Press any key to open UAC settings, then disable UAC by changing the slider to 'Never notify'" -ForegroundColor Cyan
 $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') | Out-Null
 useraccountcontrolsettings
