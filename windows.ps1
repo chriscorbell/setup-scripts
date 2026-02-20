@@ -31,6 +31,9 @@ Get-AppxPackage -Name "Microsoft.YourPhone" | Remove-AppxPackage
 Get-AppxPackage -Name "Microsoft.ZuneMusic" | Remove-AppxPackage
 Get-AppxPackage -Name "MicrosoftCorporationII.QuickAssist" | Remove-AppxPackage
 
+# Update source
+winget source update
+
 # Update existing apps
 winget upgrade --all
 
