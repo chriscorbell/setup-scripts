@@ -11,6 +11,7 @@ winget install 9N1F85V9T8BN
 winget install Microsoft.Teams
 winget install Microsoft.Office
 winget install Starship.Starship
+winget install ajeetdsouza.zoxide
 winget install CrystalDewWorld.CrystalDiskInfo
 winget install CrystalDewWorld.CrystalDiskMark
 winget install ImputNet.Helium
@@ -34,6 +35,9 @@ winget install Tailscale.Tailscale
 winget install Microsoft.PowerToys
 winget install Adobe.CreativeCloud
 wsl --install --no-distribution
+
+# Pull Starship config
+New-Item -ItemType Directory -Path "$HOME\.config" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles/refs/heads/main/.config/starship.toml" -OutFile "$HOME\.config\starship.toml"
 
 # Install Bun
 powershell -c "irm bun.sh/install.ps1|iex"
