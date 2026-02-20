@@ -10,6 +10,7 @@ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\P
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0
 
 # Remove bloat
+winget remove Microsoft.OneDrive
 Get-AppxPackage -Name "Clipchamp.Clipchamp" | Remove-AppxPackage
 Get-AppxPackage -Name "Microsoft.BingNews" | Remove-AppxPackage
 Get-AppxPackage -Name "Microsoft.BingWeather" | Remove-AppxPackage
