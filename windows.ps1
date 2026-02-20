@@ -35,45 +35,49 @@ Get-AppxPackage -Name "MicrosoftCorporationII.QuickAssist" | Remove-AppxPackage
 winget source update
 
 # Update existing apps
-winget upgrade --all
+winget upgrade --all --accept-source-agreements --accept-package-agreements
 
 # Install new apps
-winget install 7zip.7zip
-winget install Gyan.FFmpeg
-winget install Microsoft.PowerShell
-winget install 9N1F85V9T8BN
-winget install Microsoft.Teams
-winget install Microsoft.Office
-winget install Starship.Starship
-winget install ajeetdsouza.zoxide
-winget install CrystalDewWorld.CrystalDiskInfo
-winget install CrystalDewWorld.CrystalDiskMark
-winget install ImputNet.Helium
-winget install Zen-Team.Zen-Browser
-winget install Google.Chrome
-winget install RaspberryPiFoundation.RaspberryPiImager
-winget install Audacity.Audacity
-winget install TGRMNSoftware.BulkRenameUtility
-winget install REALiX.HWiNFO
-winget install LocalSend.LocalSend
-winget install Discord.Discord
-winget install Bambulab.Bambustudio
-winget install OBSProject.OBSStudio
-winget install MPC-BE.MPC-BE
-winget install ente-io.auth-desktop
-winget install Proton.ProtonVPN
-winget install Valve.Steam
-winget install Microsoft.VisualStudioCode
-winget install MOTU.MSeries
-winget install Tailscale.Tailscale
-winget install Microsoft.PowerToys
-winget install Adobe.CreativeCloud
+winget install 7zip.7zip --accept-source-agreements --accept-package-agreements
+winget install Gyan.FFmpeg --accept-source-agreements --accept-package-agreements
+winget install Microsoft.PowerShell --accept-source-agreements --accept-package-agreements
+winget install 9N1F85V9T8BN --accept-source-agreements --accept-package-agreements
+winget install Microsoft.Teams --accept-source-agreements --accept-package-agreements
+winget install Microsoft.Office --accept-source-agreements --accept-package-agreements
+winget install Starship.Starship --accept-source-agreements --accept-package-agreements
+winget install ajeetdsouza.zoxide --accept-source-agreements --accept-package-agreements
+winget install CrystalDewWorld.CrystalDiskInfo --accept-source-agreements --accept-package-agreements
+winget install CrystalDewWorld.CrystalDiskMark --accept-source-agreements --accept-package-agreements
+winget install ImputNet.Helium --accept-source-agreements --accept-package-agreements
+winget install Zen-Team.Zen-Browser --accept-source-agreements --accept-package-agreements
+winget install Google.Chrome --accept-source-agreements --accept-package-agreements
+winget install RaspberryPiFoundation.RaspberryPiImager --accept-source-agreements --accept-package-agreements
+winget install Audacity.Audacity --accept-source-agreements --accept-package-agreements
+winget install TGRMNSoftware.BulkRenameUtility --accept-source-agreements --accept-package-agreements
+winget install REALiX.HWiNFO --accept-source-agreements --accept-package-agreements
+winget install LocalSend.LocalSend --accept-source-agreements --accept-package-agreements
+winget install Discord.Discord --accept-source-agreements --accept-package-agreements
+winget install Bambulab.Bambustudio --accept-source-agreements --accept-package-agreements
+winget install OBSProject.OBSStudio --accept-source-agreements --accept-package-agreements
+winget install MPC-BE.MPC-BE --accept-source-agreements --accept-package-agreements
+winget install ente-io.auth-desktop --accept-source-agreements --accept-package-agreements
+winget install Proton.ProtonVPN --accept-source-agreements --accept-package-agreements
+winget install Valve.Steam --accept-source-agreements --accept-package-agreements
+winget install Microsoft.VisualStudioCode --accept-source-agreements --accept-package-agreements
+winget install MOTU.MSeries --accept-source-agreements --accept-package-agreements
+winget install Tailscale.Tailscale --accept-source-agreements --accept-package-agreements
+winget install Microsoft.PowerToys --accept-source-agreements --accept-package-agreements
+winget install Adobe.CreativeCloud --accept-source-agreements --accept-package-agreements
 
 # Install WSL2
 wsl --install --no-distribution
 
 # Pull Starship config
 New-Item -ItemType Directory -Path "$HOME\.config" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles/refs/heads/main/.config/starship.toml" -OutFile "$HOME\.config\starship.toml"
+
+# Pull PowerShell profile
+New-Item -ItemType Directory -Path "$HOME\Documents\PowerShell" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles-windows/refs/heads/main/Microsoft.PowerShell_profile.ps1" -OutFile "$HOME\Documents\PowerShell\Microsoft.PowerShell_profile.ps1"
+New-Item -ItemType Directory -Path "$HOME\Documents\WindowsPowerShell" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles-windows/refs/heads/main/Microsoft.PowerShell_profile.ps1" -OutFile "$HOME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
 
 # Install Bun
 powershell -c "irm bun.sh/install.ps1|iex"
