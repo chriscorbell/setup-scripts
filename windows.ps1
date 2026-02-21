@@ -126,7 +126,7 @@ Get-AppxPackage -Name "MicrosoftCorporationII.QuickAssist" | Remove-AppxPackage
 winget remove Microsoft.Teams
 
 # Update winget sources
-winget source update
+winget source update --accept-source-agreements --accept-package-agreements
 
 # Update existing apps
 winget upgrade --all --accept-source-agreements --accept-package-agreements
