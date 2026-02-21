@@ -216,6 +216,129 @@ try {
     Write-Warning "NVIDIA App installation failed: $($_.Exception.Message)"
 }
 
+# Install FL Studio (direct redirect to latest installer)
+try {
+    $flStudioInstallerUrl = "https://support.image-line.com/redirect/flstudio_win_installer"
+    $flStudioInstallerPath = Join-Path $env:TEMP "FL_Studio_Installer.exe"
+
+    Write-Host "Downloading FL Studio installer..." -ForegroundColor Cyan
+    if (Get-Command curl.exe -ErrorAction SilentlyContinue) {
+        & curl.exe -L --fail --retry 3 --retry-delay 2 --output $flStudioInstallerPath $flStudioInstallerUrl
+        if ($LASTEXITCODE -ne 0) {
+            throw "curl.exe download failed with exit code $LASTEXITCODE"
+        }
+    } elseif (Get-Command Start-BitsTransfer -ErrorAction SilentlyContinue) {
+        Start-BitsTransfer -Source $flStudioInstallerUrl -Destination $flStudioInstallerPath -ErrorAction Stop
+    } else {
+        $oldProgressPreference = $ProgressPreference
+        $ProgressPreference = 'SilentlyContinue'
+        try {
+            Invoke-WebRequest -Uri $flStudioInstallerUrl -OutFile $flStudioInstallerPath -UseBasicParsing
+        } finally {
+            $ProgressPreference = $oldProgressPreference
+        }
+    }
+
+    Write-Host "Installing FL Studio..." -ForegroundColor Cyan
+    $flStudioProcess = Start-Process -FilePath $flStudioInstallerPath -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART','/SP-' -Wait -PassThru
+    if ($flStudioProcess.ExitCode -ne 0) {
+        Write-Warning "Silent FL Studio install was not accepted (exit code: $($flStudioProcess.ExitCode)). Launching interactive installer..."
+        Start-Process -FilePath $flStudioInstallerPath -Wait
+    }
+} catch {
+    Write-Warning "FL Studio installation failed: $($_.Exception.Message)"
+}
+
+# Install iLok License Manager
+try {
+    $iLokZipUrl = "https://installers.ilok.com/iloklicensemanager/LicenseSupportInstallerWin64.zip"
+    $iLokZipPath = Join-Path $env:TEMP "LicenseSupportInstallerWin64.zip"
+    $iLokExtractDir = Join-Path $env:TEMP "iLokLicenseManager"
+
+    Write-Host "Downloading iLok License Manager installer..." -ForegroundColor Cyan
+    if (Get-Command curl.exe -ErrorAction SilentlyContinue) {
+        & curl.exe -L --fail --retry 3 --retry-delay 2 --output $iLokZipPath $iLokZipUrl
+        if ($LASTEXITCODE -ne 0) {
+            throw "curl.exe download failed with exit code $LASTEXITCODE"
+        }
+    } elseif (Get-Command Start-BitsTransfer -ErrorAction SilentlyContinue) {
+        Start-BitsTransfer -Source $iLokZipUrl -Destination $iLokZipPath -ErrorAction Stop
+    } else {
+        $oldProgressPreference = $ProgressPreference
+        $ProgressPreference = 'SilentlyContinue'
+        try {
+            Invoke-WebRequest -Uri $iLokZipUrl -OutFile $iLokZipPath -UseBasicParsing
+        } finally {
+            $ProgressPreference = $oldProgressPreference
+        }
+    }
+
+    if (Test-Path $iLokExtractDir) {
+        Remove-Item -Path $iLokExtractDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    New-Item -ItemType Directory -Path $iLokExtractDir -Force | Out-Null
+    Expand-Archive -Path $iLokZipPath -DestinationPath $iLokExtractDir -Force
+
+    $iLokExeInstaller = Get-ChildItem -Path $iLokExtractDir -Filter *.exe -Recurse | Select-Object -First 1
+    $iLokMsiInstaller = Get-ChildItem -Path $iLokExtractDir -Filter *.msi -Recurse | Select-Object -First 1
+
+    Write-Host "Installing iLok License Manager..." -ForegroundColor Cyan
+    if ($iLokExeInstaller) {
+        $iLokProcess = Start-Process -FilePath $iLokExeInstaller.FullName -ArgumentList '/S' -Wait -PassThru
+        if ($iLokProcess.ExitCode -ne 0) {
+            Write-Warning "Silent iLok installer flag was not accepted (exit code: $($iLokProcess.ExitCode)). Launching interactive installer..."
+            Start-Process -FilePath $iLokExeInstaller.FullName -Wait
+        }
+    } elseif ($iLokMsiInstaller) {
+        Start-Process -FilePath "msiexec.exe" -ArgumentList '/i',"$($iLokMsiInstaller.FullName)",'/qn','/norestart' -Wait
+    } else {
+        throw "Could not find an .exe or .msi installer in extracted iLok package."
+    }
+} catch {
+    Write-Warning "iLok License Manager installation failed: $($_.Exception.Message)"
+}
+
+# Install Neural DSP - Archetype Gojira X
+try {
+    $neuralDspInstallerPrimaryUrl = "https://neuraldsp.com/download-confirmation/archetype-gojira?platform=pc"
+    $neuralDspInstallerPath = Join-Path $env:TEMP "Archetype_Gojira_X_Setup.exe"
+
+    Write-Host "Downloading Neural DSP Archetype Gojira X installer..." -ForegroundColor Cyan
+    if (Test-Path $neuralDspInstallerPath) {
+        Remove-Item -Path $neuralDspInstallerPath -Force -ErrorAction SilentlyContinue
+    }
+
+    if (Get-Command curl.exe -ErrorAction SilentlyContinue) {
+        & curl.exe -L --fail --retry 3 --retry-delay 2 --output $neuralDspInstallerPath $neuralDspInstallerPrimaryUrl
+        if ($LASTEXITCODE -ne 0) {
+            throw "curl.exe download failed with exit code $LASTEXITCODE"
+        }
+    } elseif (Get-Command Start-BitsTransfer -ErrorAction SilentlyContinue) {
+        Start-BitsTransfer -Source $neuralDspInstallerPrimaryUrl -Destination $neuralDspInstallerPath -ErrorAction Stop
+    } else {
+        $oldProgressPreference = $ProgressPreference
+        $ProgressPreference = 'SilentlyContinue'
+        try {
+            Invoke-WebRequest -Uri $neuralDspInstallerPrimaryUrl -OutFile $neuralDspInstallerPath -UseBasicParsing
+        } finally {
+            $ProgressPreference = $oldProgressPreference
+        }
+    }
+
+    if (-not ((Test-Path $neuralDspInstallerPath) -and ((Get-Item $neuralDspInstallerPath).Length -gt 0))) {
+        throw "Neural DSP installer download failed or returned an empty file."
+    }
+
+    Write-Host "Installing Neural DSP Archetype Gojira X..." -ForegroundColor Cyan
+    $neuralDspProcess = Start-Process -FilePath $neuralDspInstallerPath -ArgumentList '/S' -Wait -PassThru
+    if ($neuralDspProcess.ExitCode -ne 0) {
+        Write-Warning "Silent Neural DSP install was not accepted (exit code: $($neuralDspProcess.ExitCode)). Launching interactive installer..."
+        Start-Process -FilePath $neuralDspInstallerPath -Wait
+    }
+} catch {
+    Write-Warning "Neural DSP Archetype Gojira X installation failed: $($_.Exception.Message)"
+}
+
 # Pull Windows Terminal config
 New-Item -ItemType Directory -Path "$HOME\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles-windows/main/settings.json" -OutFile "$HOME\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
 
