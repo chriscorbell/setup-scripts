@@ -1,3 +1,14 @@
+# Disable UAC
+Write-Host "Press any key to open UAC settings, then disable UAC by changing the slider to 'Never notify'" -ForegroundColor Cyan
+$Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') | Out-Null
+useraccountcontrolsettings
+Start-Sleep -Milliseconds 2000
+Write-Host "Confirm UAC is disabled, then press any key to continue" -ForegroundColor Yellow
+$Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') | Out-Null
+
+# Set execution policy
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
+
 # Widgets off (HKLM) - elevate only if needed
 $RemoveWidgetCmd = 'reg.exe add "HKLM\Software\Policies\Microsoft\Dsh" /v "AllowNewsAndInterests" /t REG_DWORD /d 0 /f'
 
@@ -18,16 +29,8 @@ if ($IsAdmin) {
     }
 }
 
-# Disable UAC
-Write-Host "Press any key to open UAC settings, then disable UAC by changing the slider to 'Never notify'" -ForegroundColor Cyan
-$Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') | Out-Null
-useraccountcontrolsettings
-Start-Sleep -Milliseconds 2000
-Write-Host "Confirm UAC is disabled, then press any key to continue" -ForegroundColor Yellow
-$Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') | Out-Null
-
-# Set execution policy
-Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
+# Restore classic context menu
+reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
 
 # Remove all pinned apps from taskbar
 $taskbarPins = Join-Path $env:APPDATA "Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
