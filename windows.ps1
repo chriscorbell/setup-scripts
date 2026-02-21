@@ -154,6 +154,27 @@ winget install Adobe.CreativeCloud --accept-source-agreements --accept-package-a
 winget remove Microsoft.OneDrive
 winget remove Microsoft.CommandPalette
 
+# Install NVIDIA App (fallback since winget package may be unavailable)
+try {
+    $nvidiaLandingUrl = "https://www.nvidia.com/en-us/software/nvidia-app/"
+    $nvidiaPage = Invoke-WebRequest -Uri $nvidiaLandingUrl -UseBasicParsing
+    $nvidiaAppUrl = ($nvidiaPage.Content | Select-String -Pattern 'https://[^"'"'\s]+NVIDIA_app[^"'"'\s]+\.exe' -AllMatches).Matches.Value |
+        Select-Object -First 1
+
+    if (-not $nvidiaAppUrl) {
+        Write-Warning "Could not detect a direct NVIDIA App installer URL automatically. Open $nvidiaLandingUrl and install manually."
+    } else {
+        $nvidiaInstallerPath = Join-Path $env:TEMP "NVIDIA_app_setup.exe"
+        Write-Host "Downloading NVIDIA App installer..." -ForegroundColor Cyan
+        Invoke-WebRequest -Uri $nvidiaAppUrl -OutFile $nvidiaInstallerPath
+
+        Write-Host "Installing NVIDIA App..." -ForegroundColor Cyan
+        Start-Process -FilePath $nvidiaInstallerPath -ArgumentList '/S' -Wait
+    }
+} catch {
+    Write-Warning "NVIDIA App installation failed: $($_.Exception.Message)"
+}
+
 # Install WSL2
 wsl --install --no-distribution
 
