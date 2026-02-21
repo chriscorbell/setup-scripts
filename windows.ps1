@@ -136,7 +136,6 @@ winget install 7zip.7zip --accept-source-agreements --accept-package-agreements
 winget install Gyan.FFmpeg --accept-source-agreements --accept-package-agreements
 winget install Microsoft.PowerShell --accept-source-agreements --accept-package-agreements
 winget install 9N1F85V9T8BN --accept-source-agreements --accept-package-agreements
-winget install Microsoft.Teams --accept-source-agreements --accept-package-agreements
 winget install Microsoft.Office --accept-source-agreements --accept-package-agreements
 winget install Starship.Starship --accept-source-agreements --accept-package-agreements
 winget install ajeetdsouza.zoxide --accept-source-agreements --accept-package-agreements
