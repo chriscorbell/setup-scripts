@@ -138,8 +138,8 @@ winget install Microsoft.PowerShell --accept-source-agreements --accept-package-
 # winget install 9N1F85V9T8BN --accept-source-agreements --accept-package-agreements
 # winget install Microsoft.Teams --accept-source-agreements --accept-package-agreements
 # winget install Microsoft.Office --accept-source-agreements --accept-package-agreements
-# winget install Starship.Starship --accept-source-agreements --accept-package-agreements
-# winget install ajeetdsouza.zoxide --accept-source-agreements --accept-package-agreements
+winget install Starship.Starship --accept-source-agreements --accept-package-agreements
+winget install ajeetdsouza.zoxide --accept-source-agreements --accept-package-agreements
 winget install DEVCOM.JetBrainsMonoNerdFont --accept-source-agreements --accept-package-agreements
 # winget install CrystalDewWorld.CrystalDiskInfo --accept-source-agreements --accept-package-agreements
 # winget install CrystalDewWorld.CrystalDiskMark --accept-source-agreements --accept-package-agreements
@@ -163,7 +163,7 @@ winget install DEVCOM.JetBrainsMonoNerdFont --accept-source-agreements --accept-
 # winget install Tailscale.Tailscale --accept-source-agreements --accept-package-agreements
 # winget install Microsoft.PowerToys --accept-source-agreements --accept-package-agreements
 # winget install Adobe.CreativeCloud --accept-source-agreements --accept-package-agreements
-# winget remove Microsoft.OneDrive
+winget remove Microsoft.OneDrive
 # winget remove Microsoft.CommandPalette
 
 # Install NVIDIA App (fallback since winget package may be unavailable)
