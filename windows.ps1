@@ -1,14 +1,21 @@
-# Need to auto-elevate privileges if needed
+# Widgets off (HKLM) - elevate only if needed
+$RemoveWidgetCmd = 'reg.exe add "HKLM\Software\Policies\Microsoft\Dsh" /v "AllowNewsAndInterests" /t REG_DWORD /d 0 /f'
+
 $IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
 ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
-if (-not $IsAdmin) {
-    Start-Process powershell -Verb RunAs -ArgumentList @(
-        '-NoProfile',
-        '-ExecutionPolicy', 'Bypass',
-        '-Command', "irm https://raw.githubusercontent.com/chriscorbell/setup-scripts/main/windows.ps1 | iex"
-    )
-    exit
+if ($IsAdmin) {
+    & reg.exe add "HKLM\Software\Policies\Microsoft\Dsh" /v "AllowNewsAndInterests" /t REG_DWORD /d 0 /f | Out-Null
+} else {
+    try {
+        Start-Process -FilePath "powershell.exe" -Verb RunAs -Wait -ArgumentList @(
+            '-NoProfile',
+            '-ExecutionPolicy','Bypass',
+            '-Command', "$RemoveWidgetCmd | Out-Null"
+        )
+    } catch {
+        Write-Warning "Elevation was cancelled or failed. Widgets policy was not applied."
+    }
 }
 
 # Disable UAC
@@ -38,9 +45,6 @@ reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "Searchbo
 # Task View off
 reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "ShowTaskViewButton" /t REG_DWORD /d 0 /f | Out-Null
 
-# Widgets off
-reg.exe add "HKLM\Software\Policies\Microsoft\Dsh" /v "AllowNewsAndInterests" /t REG_DWORD /d 0 /f | Out-Null
-
 # Start: More pins
 reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_Layout" /t REG_DWORD /d 1 /f | Out-Null
 
@@ -62,6 +66,22 @@ reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /
 # Explorer: compact view + file extensions
 reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "UseCompactMode" /t REG_DWORD /d 1 /f | Out-Null
 reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "HideFileExt"    /t REG_DWORD /d 0 /f | Out-Null
+
+# File Explorer: open to "This PC" (LaunchTo=1)
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "LaunchTo" /t REG_DWORD /d 1 /f | Out-Null
+
+# Theme: Windows (dark) – system + apps
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "AppsUseLightTheme"     /t REG_DWORD /d 0 /f | Out-Null
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "SystemUsesLightTheme" /t REG_DWORD /d 0 /f | Out-Null
+
+# Desktop: disable Spotlight collection
+reg.exe add "HKCU\Software\Policies\Microsoft\Windows\CloudContent" /v "DisableSpotlightCollectionOnDesktop" /t REG_DWORD /d 1 /f | Out-Null
+
+# Desktop: set dark Bloom wallpaper
+reg.exe add "HKCU\Control Panel\Desktop" /v "WallPaper" /t REG_SZ /d "C:\Windows\Web\4K\Wallpaper\Windows\img19_1920x1200.jpg" /f | Out-Null
+
+# Apply wallpaper immediately
+rundll32.exe user32.dll,UpdatePerUserSystemParameters
 
 # Apply changes: restart Explorer
 Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
