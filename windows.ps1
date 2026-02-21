@@ -129,7 +129,7 @@ try {
 wsl --install --no-distribution
 
 # Temporarily set PATH
-$env:Path = "$HOME\.local\bin;$HOME\AppData\Local\Microsoft\WinGet\Packages\ajeetdsouza.zoxide_Micorosft.Winget.Source_8wekyb3d8bbwe;C:\Program Files\starship\bin;$env:Path"
+$env:Path = [System.Environment]::ExpandEnvironmentVariables(([System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")))
 
 # Pull Starship config
 New-Item -ItemType Directory -Path "$HOME\.config" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles/main/.config/starship.toml" -OutFile "$HOME\.config\starship.toml"
@@ -137,6 +137,7 @@ New-Item -ItemType Directory -Path "$HOME\.config" -Force | Out-Null; Invoke-Web
 # Pull PowerShell profile
 New-Item -ItemType Directory -Path "$HOME\Documents\PowerShell" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles-windows/main/Microsoft.PowerShell_profile.ps1" -OutFile "$HOME\Documents\PowerShell\Microsoft.PowerShell_profile.ps1"
 New-Item -ItemType Directory -Path "$HOME\Documents\WindowsPowerShell" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles-windows/main/Microsoft.PowerShell_profile.ps1" -OutFile "$HOME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+. $PROFILE
 
 # Pull Windows Terminal config
 New-Item -ItemType Directory -Path "$HOME\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles-windows/main/settings.json" -OutFile "$HOME\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
