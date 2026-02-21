@@ -43,13 +43,13 @@ winget remove Microsoft.Teams
 # Install new apps
 # winget install 7zip.7zip --accept-source-agreements --accept-package-agreements
 # winget install Gyan.FFmpeg --accept-source-agreements --accept-package-agreements
-# winget install Microsoft.PowerShell --accept-source-agreements --accept-package-agreements
+winget install Microsoft.PowerShell --accept-source-agreements --accept-package-agreements
 # winget install 9N1F85V9T8BN --accept-source-agreements --accept-package-agreements
 # winget install Microsoft.Teams --accept-source-agreements --accept-package-agreements
 # winget install Microsoft.Office --accept-source-agreements --accept-package-agreements
 # winget install Starship.Starship --accept-source-agreements --accept-package-agreements
 # winget install ajeetdsouza.zoxide --accept-source-agreements --accept-package-agreements
-# winget install DEVCOM.JetBrainsMonoNerdFont --accept-source-agreements --accept-package-agreements
+winget install DEVCOM.JetBrainsMonoNerdFont --accept-source-agreements --accept-package-agreements
 # winget install CrystalDewWorld.CrystalDiskInfo --accept-source-agreements --accept-package-agreements
 # winget install CrystalDewWorld.CrystalDiskMark --accept-source-agreements --accept-package-agreements
 # winget install ImputNet.Helium --accept-source-agreements --accept-package-agreements
@@ -128,16 +128,12 @@ try {
 # Install WSL2
 wsl --install --no-distribution
 
-# Temporarily set PATH
-$env:Path = [System.Environment]::ExpandEnvironmentVariables(([System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")))
-
 # Pull Starship config
 New-Item -ItemType Directory -Path "$HOME\.config" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles/main/.config/starship.toml" -OutFile "$HOME\.config\starship.toml"
 
 # Pull PowerShell profile
 New-Item -ItemType Directory -Path "$HOME\Documents\PowerShell" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles-windows/main/Microsoft.PowerShell_profile.ps1" -OutFile "$HOME\Documents\PowerShell\Microsoft.PowerShell_profile.ps1"
 New-Item -ItemType Directory -Path "$HOME\Documents\WindowsPowerShell" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles-windows/main/Microsoft.PowerShell_profile.ps1" -OutFile "$HOME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
-. $PROFILE
 
 # Pull Windows Terminal config
 New-Item -ItemType Directory -Path "$HOME\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles-windows/main/settings.json" -OutFile "$HOME\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
