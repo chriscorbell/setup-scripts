@@ -158,7 +158,7 @@ winget remove Microsoft.CommandPalette
 try {
     $nvidiaLandingUrl = "https://www.nvidia.com/en-us/software/nvidia-app/"
     $nvidiaPage = Invoke-WebRequest -Uri $nvidiaLandingUrl -UseBasicParsing
-    $nvidiaAppUrl = ($nvidiaPage.Content | Select-String -Pattern 'https://[^"'"'\s]+NVIDIA_app[^"'"'\s]+\.exe' -AllMatches).Matches.Value |
+    $nvidiaAppUrl = ($nvidiaPage.Content | Select-String -Pattern 'https://[^"''\s]+NVIDIA_app[^"''\s]+\.exe' -AllMatches).Matches.Value |
         Select-Object -First 1
 
     if (-not $nvidiaAppUrl) {
