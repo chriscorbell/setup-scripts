@@ -284,11 +284,7 @@ try {
 
     Write-Host "Installing iLok License Manager..." -ForegroundColor Cyan
     if ($iLokExeInstaller) {
-        $iLokProcess = Start-Process -FilePath $iLokExeInstaller.FullName -ArgumentList '/S' -Wait -PassThru
-        if ($iLokProcess.ExitCode -ne 0) {
-            Write-Warning "Silent iLok installer flag was not accepted (exit code: $($iLokProcess.ExitCode)). Launching interactive installer..."
-            Start-Process -FilePath $iLokExeInstaller.FullName -Wait
-        }
+        Start-Process -FilePath $iLokExeInstaller.FullName -Wait
     } elseif ($iLokMsiInstaller) {
         Start-Process -FilePath "msiexec.exe" -ArgumentList '/i',"$($iLokMsiInstaller.FullName)",'/qn','/norestart' -Wait
     } else {
@@ -300,8 +296,23 @@ try {
 
 # Install Neural DSP - Archetype Gojira X
 try {
-    $neuralDspInstallerPrimaryUrl = "https://neuraldsp.com/download-confirmation/archetype-gojira?platform=pc"
+    $neuralDspConfirmationUrl = "https://neuraldsp.com/download-confirmation/archetype-gojira?platform=pc"
     $neuralDspInstallerPath = Join-Path $env:TEMP "Archetype_Gojira_X_Setup.exe"
+    $neuralDspInstallerUrl = $null
+
+    Write-Host "Resolving Neural DSP installer URL..." -ForegroundColor Cyan
+    $neuralDspResponse = Invoke-WebRequest -Uri $neuralDspConfirmationUrl -UseBasicParsing -MaximumRedirection 10
+    $neuralDspFinalUri = $neuralDspResponse.BaseResponse.ResponseUri.AbsoluteUri
+    if ($neuralDspFinalUri -match '\.exe(\?|$)') {
+        $neuralDspInstallerUrl = $neuralDspFinalUri
+    } else {
+        $neuralDspInstallerUrl = ($neuralDspResponse.Content | Select-String -Pattern 'https://downloads\.neuraldsp\.com[^"''\s]+\.exe' -AllMatches).Matches.Value |
+            Select-Object -First 1
+    }
+
+    if (-not $neuralDspInstallerUrl) {
+        throw "Could not resolve a direct Neural DSP .exe installer URL from $neuralDspConfirmationUrl"
+    }
 
     Write-Host "Downloading Neural DSP Archetype Gojira X installer..." -ForegroundColor Cyan
     if (Test-Path $neuralDspInstallerPath) {
@@ -309,17 +320,17 @@ try {
     }
 
     if (Get-Command curl.exe -ErrorAction SilentlyContinue) {
-        & curl.exe -L --fail --retry 3 --retry-delay 2 --output $neuralDspInstallerPath $neuralDspInstallerPrimaryUrl
+        & curl.exe -L --silent --show-error --fail --retry 3 --retry-delay 2 --output $neuralDspInstallerPath $neuralDspInstallerUrl
         if ($LASTEXITCODE -ne 0) {
             throw "curl.exe download failed with exit code $LASTEXITCODE"
         }
     } elseif (Get-Command Start-BitsTransfer -ErrorAction SilentlyContinue) {
-        Start-BitsTransfer -Source $neuralDspInstallerPrimaryUrl -Destination $neuralDspInstallerPath -ErrorAction Stop
+        Start-BitsTransfer -Source $neuralDspInstallerUrl -Destination $neuralDspInstallerPath -ErrorAction Stop
     } else {
         $oldProgressPreference = $ProgressPreference
         $ProgressPreference = 'SilentlyContinue'
         try {
-            Invoke-WebRequest -Uri $neuralDspInstallerPrimaryUrl -OutFile $neuralDspInstallerPath -UseBasicParsing
+            Invoke-WebRequest -Uri $neuralDspInstallerUrl -OutFile $neuralDspInstallerPath -UseBasicParsing
         } finally {
             $ProgressPreference = $oldProgressPreference
         }
@@ -329,12 +340,13 @@ try {
         throw "Neural DSP installer download failed or returned an empty file."
     }
 
-    Write-Host "Installing Neural DSP Archetype Gojira X..." -ForegroundColor Cyan
-    $neuralDspProcess = Start-Process -FilePath $neuralDspInstallerPath -ArgumentList '/S' -Wait -PassThru
-    if ($neuralDspProcess.ExitCode -ne 0) {
-        Write-Warning "Silent Neural DSP install was not accepted (exit code: $($neuralDspProcess.ExitCode)). Launching interactive installer..."
-        Start-Process -FilePath $neuralDspInstallerPath -Wait
+    $neuralDspHeader = Get-Content -Path $neuralDspInstallerPath -Encoding Byte -TotalCount 2
+    if (($neuralDspHeader.Count -lt 2) -or ($neuralDspHeader[0] -ne 0x4D) -or ($neuralDspHeader[1] -ne 0x5A)) {
+        throw "Downloaded Neural DSP file is not a valid Windows executable (likely HTML instead of installer)."
     }
+
+    Write-Host "Installing Neural DSP Archetype Gojira X..." -ForegroundColor Cyan
+    Start-Process -FilePath $neuralDspInstallerPath -Wait
 } catch {
     Write-Warning "Neural DSP Archetype Gojira X installation failed: $($_.Exception.Message)"
 }
