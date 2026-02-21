@@ -169,6 +169,7 @@ winget remove Microsoft.OneDrive
 # Install NVIDIA App (fallback since winget package may be unavailable)
 try {
     $nvidiaLandingUrl = "https://www.nvidia.com/en-us/software/nvidia-app/"
+    $nvidiaInstallerPath = Join-Path $env:TEMP "NVIDIA_app_setup.exe"
     $nvidiaPage = Invoke-WebRequest -Uri $nvidiaLandingUrl -UseBasicParsing
     $nvidiaAppUrl = ($nvidiaPage.Content | Select-String -Pattern 'https://[^"''\s]+NVIDIA_app[^"''\s]+\.exe' -AllMatches).Matches.Value |
         Select-Object -First 1
@@ -176,7 +177,6 @@ try {
     if (-not $nvidiaAppUrl) {
         Write-Warning "Could not detect a direct NVIDIA App installer URL automatically. Open $nvidiaLandingUrl and install manually."
     } else {
-        $nvidiaInstallerPath = Join-Path $env:TEMP "NVIDIA_app_setup.exe"
         Write-Host "Downloading NVIDIA App installer..." -ForegroundColor Cyan
         $downloadMethod = $null
         $downloadTimer = [System.Diagnostics.Stopwatch]::StartNew()
@@ -214,6 +214,10 @@ try {
     }
 } catch {
     Write-Warning "NVIDIA App installation failed: $($_.Exception.Message)"
+} finally {
+    if (Test-Path $nvidiaInstallerPath) {
+        Remove-Item -Path $nvidiaInstallerPath -Force -ErrorAction SilentlyContinue
+    }
 }
 
 # Install FL Studio (direct redirect to latest installer)
@@ -247,6 +251,10 @@ try {
     }
 } catch {
     Write-Warning "FL Studio installation failed: $($_.Exception.Message)"
+} finally {
+    if (Test-Path $flStudioInstallerPath) {
+        Remove-Item -Path $flStudioInstallerPath -Force -ErrorAction SilentlyContinue
+    }
 }
 
 # Install iLok License Manager
@@ -292,6 +300,13 @@ try {
     }
 } catch {
     Write-Warning "iLok License Manager installation failed: $($_.Exception.Message)"
+} finally {
+    if (Test-Path $iLokZipPath) {
+        Remove-Item -Path $iLokZipPath -Force -ErrorAction SilentlyContinue
+    }
+    if (Test-Path $iLokExtractDir) {
+        Remove-Item -Path $iLokExtractDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
 }
 
 # Install Neural DSP - Archetype Gojira X
@@ -349,6 +364,10 @@ try {
     Start-Process -FilePath $neuralDspInstallerPath -Wait
 } catch {
     Write-Warning "Neural DSP Archetype Gojira X installation failed: $($_.Exception.Message)"
+} finally {
+    if (Test-Path $neuralDspInstallerPath) {
+        Remove-Item -Path $neuralDspInstallerPath -Force -ErrorAction SilentlyContinue
+    }
 }
 
 # Pull Windows Terminal config
