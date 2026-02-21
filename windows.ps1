@@ -132,39 +132,39 @@ winget source update
 winget upgrade --all --accept-source-agreements --accept-package-agreements
 
 # Install new apps
-# winget install 7zip.7zip --accept-source-agreements --accept-package-agreements
-# winget install Gyan.FFmpeg --accept-source-agreements --accept-package-agreements
+winget install 7zip.7zip --accept-source-agreements --accept-package-agreements
+winget install Gyan.FFmpeg --accept-source-agreements --accept-package-agreements
 winget install Microsoft.PowerShell --accept-source-agreements --accept-package-agreements
-# winget install 9N1F85V9T8BN --accept-source-agreements --accept-package-agreements
-# winget install Microsoft.Teams --accept-source-agreements --accept-package-agreements
-# winget install Microsoft.Office --accept-source-agreements --accept-package-agreements
+winget install 9N1F85V9T8BN --accept-source-agreements --accept-package-agreements
+winget install Microsoft.Teams --accept-source-agreements --accept-package-agreements
+winget install Microsoft.Office --accept-source-agreements --accept-package-agreements
 winget install Starship.Starship --accept-source-agreements --accept-package-agreements
 winget install ajeetdsouza.zoxide --accept-source-agreements --accept-package-agreements
 winget install DEVCOM.JetBrainsMonoNerdFont --accept-source-agreements --accept-package-agreements
-# winget install CrystalDewWorld.CrystalDiskInfo --accept-source-agreements --accept-package-agreements
-# winget install CrystalDewWorld.CrystalDiskMark --accept-source-agreements --accept-package-agreements
-# winget install ImputNet.Helium --accept-source-agreements --accept-package-agreements
-# winget install Zen-Team.Zen-Browser --accept-source-agreements --accept-package-agreements
-# winget install Google.Chrome --accept-source-agreements --accept-package-agreements
-# winget install RaspberryPiFoundation.RaspberryPiImager --accept-source-agreements --accept-package-agreements
-# winget install Audacity.Audacity --accept-source-agreements --accept-package-agreements
-# winget install TGRMNSoftware.BulkRenameUtility --accept-source-agreements --accept-package-agreements
-# winget install REALiX.HWiNFO --accept-source-agreements --accept-package-agreements
-# winget install LocalSend.LocalSend --accept-source-agreements --accept-package-agreements
-# winget install Discord.Discord --accept-source-agreements --accept-package-agreements
-# winget install Bambulab.Bambustudio --accept-source-agreements --accept-package-agreements
-# winget install OBSProject.OBSStudio --accept-source-agreements --accept-package-agreements
-# winget install MPC-BE.MPC-BE --accept-source-agreements --accept-package-agreements
-# winget install ente-io.auth-desktop --accept-source-agreements --accept-package-agreements
-# winget install Proton.ProtonVPN --accept-source-agreements --accept-package-agreements
-# winget install Valve.Steam --accept-source-agreements --accept-package-agreements
-# winget install Microsoft.VisualStudioCode --accept-source-agreements --accept-package-agreements
-# winget install MOTU.MSeries --accept-source-agreements --accept-package-agreements
-# winget install Tailscale.Tailscale --accept-source-agreements --accept-package-agreements
-# winget install Microsoft.PowerToys --accept-source-agreements --accept-package-agreements
-# winget install Adobe.CreativeCloud --accept-source-agreements --accept-package-agreements
+winget install CrystalDewWorld.CrystalDiskInfo --accept-source-agreements --accept-package-agreements
+winget install CrystalDewWorld.CrystalDiskMark --accept-source-agreements --accept-package-agreements
+winget install ImputNet.Helium --accept-source-agreements --accept-package-agreements
+winget install Zen-Team.Zen-Browser --accept-source-agreements --accept-package-agreements
+winget install Google.Chrome --accept-source-agreements --accept-package-agreements
+winget install RaspberryPiFoundation.RaspberryPiImager --accept-source-agreements --accept-package-agreements
+winget install Audacity.Audacity --accept-source-agreements --accept-package-agreements
+winget install TGRMNSoftware.BulkRenameUtility --accept-source-agreements --accept-package-agreements
+winget install REALiX.HWiNFO --accept-source-agreements --accept-package-agreements
+winget install LocalSend.LocalSend --accept-source-agreements --accept-package-agreements
+winget install Discord.Discord --accept-source-agreements --accept-package-agreements
+winget install Bambulab.Bambustudio --accept-source-agreements --accept-package-agreements
+winget install OBSProject.OBSStudio --accept-source-agreements --accept-package-agreements
+winget install MPC-BE.MPC-BE --accept-source-agreements --accept-package-agreements
+winget install ente-io.auth-desktop --accept-source-agreements --accept-package-agreements
+winget install Proton.ProtonVPN --accept-source-agreements --accept-package-agreements
+winget install Valve.Steam --accept-source-agreements --accept-package-agreements
+winget install Microsoft.VisualStudioCode --accept-source-agreements --accept-package-agreements
+winget install MOTU.MSeries --accept-source-agreements --accept-package-agreements
+winget install Tailscale.Tailscale --accept-source-agreements --accept-package-agreements
+winget install Microsoft.PowerToys --accept-source-agreements --accept-package-agreements
+winget install Adobe.CreativeCloud --accept-source-agreements --accept-package-agreements
 winget remove Microsoft.OneDrive
-# winget remove Microsoft.CommandPalette
+winget remove Microsoft.CommandPalette
 
 # Install NVIDIA App (fallback since winget package may be unavailable)
 try {
