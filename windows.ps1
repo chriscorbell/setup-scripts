@@ -87,7 +87,36 @@ try {
     } else {
         $nvidiaInstallerPath = Join-Path $env:TEMP "NVIDIA_app_setup.exe"
         Write-Host "Downloading NVIDIA App installer..." -ForegroundColor Cyan
-        Invoke-WebRequest -Uri $nvidiaAppUrl -OutFile $nvidiaInstallerPath
+        $downloadMethod = $null
+        $downloadTimer = [System.Diagnostics.Stopwatch]::StartNew()
+
+        if (Get-Command curl.exe -ErrorAction SilentlyContinue) {
+            $downloadMethod = "curl.exe"
+            & curl.exe -L --fail --retry 3 --retry-delay 2 --output $nvidiaInstallerPath $nvidiaAppUrl
+            if ($LASTEXITCODE -ne 0) {
+                throw "curl.exe download failed with exit code $LASTEXITCODE"
+            }
+        } elseif (Get-Command Start-BitsTransfer -ErrorAction SilentlyContinue) {
+            $downloadMethod = "BITS"
+            Start-BitsTransfer -Source $nvidiaAppUrl -Destination $nvidiaInstallerPath -ErrorAction Stop
+        } else {
+            $downloadMethod = "Invoke-WebRequest"
+            $oldProgressPreference = $ProgressPreference
+            $ProgressPreference = 'SilentlyContinue'
+            try {
+                Invoke-WebRequest -Uri $nvidiaAppUrl -OutFile $nvidiaInstallerPath -UseBasicParsing
+            } finally {
+                $ProgressPreference = $oldProgressPreference
+            }
+        }
+
+        $downloadTimer.Stop()
+        if (Test-Path $nvidiaInstallerPath) {
+            $downloadedSizeMB = [Math]::Round(((Get-Item $nvidiaInstallerPath).Length / 1MB), 2)
+            $downloadSeconds = [Math]::Max($downloadTimer.Elapsed.TotalSeconds, 0.01)
+            $downloadSpeedMBs = [Math]::Round(($downloadedSizeMB / $downloadSeconds), 2)
+            Write-Host "NVIDIA installer download complete via $downloadMethod ($downloadedSizeMB MB @ $downloadSpeedMBs MB/s)." -ForegroundColor Green
+        }
 
         Write-Host "Installing NVIDIA App..." -ForegroundColor Cyan
         Start-Process -FilePath $nvidiaInstallerPath -ArgumentList '/S' -Wait
