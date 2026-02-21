@@ -219,6 +219,13 @@ try {
 # Pull Windows Terminal config
 New-Item -ItemType Directory -Path "$HOME\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState" -Force | Out-Null; Invoke-WebRequest -Uri "https://raw.githubusercontent.com/chriscorbell/dotfiles-windows/main/settings.json" -OutFile "$HOME\AppData\Local\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json"
 
+# Set default terminal application to Windows Terminal
+$consoleStartupKey = "HKCU:\Console\%%Startup"
+$windowsTerminalDelegationGuid = "{2EACA947-7F5F-4CFA-BA87-8F7FBEEFBE69}"
+New-Item -Path $consoleStartupKey -Force | Out-Null
+New-ItemProperty -Path $consoleStartupKey -Name "DelegationConsole" -PropertyType String -Value $windowsTerminalDelegationGuid -Force | Out-Null
+New-ItemProperty -Path $consoleStartupKey -Name "DelegationTerminal" -PropertyType String -Value $windowsTerminalDelegationGuid -Force | Out-Null
+
 # Install WSL2
 wsl --install --no-distribution
 
