@@ -9,8 +9,99 @@ $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown') | Out-Null
 # Set execution policy
 Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned -Force
 
+# Widgets off (HKLM) - elevate only if needed
+$RemoveWidgetCmd = 'reg.exe add "HKLM\Software\Policies\Microsoft\Dsh" /v "AllowNewsAndInterests" /t REG_DWORD /d 0 /f'
+
+$IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
+).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+
+if ($IsAdmin) {
+    & reg.exe add "HKLM\Software\Policies\Microsoft\Dsh" /v "AllowNewsAndInterests" /t REG_DWORD /d 0 /f | Out-Null
+} else {
+    try {
+        Start-Process -FilePath "powershell.exe" -Verb RunAs -Wait -ArgumentList @(
+            '-NoProfile',
+            '-ExecutionPolicy','Bypass',
+            '-Command', "$RemoveWidgetCmd | Out-Null"
+        )
+    } catch {
+        Write-Warning "Elevation was cancelled or failed. Widgets policy was not applied."
+    }
+}
+
 # Restore classic context menu
 reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
+
+# Remove all pinned apps from taskbar
+$taskbarPins = Join-Path $env:APPDATA "Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar"
+if (Test-Path $taskbarPins) {
+    Remove-Item -Path (Join-Path $taskbarPins "*") -Force -ErrorAction SilentlyContinue
+}
+
+# Also try deleting Taskband state (may not exist on newer builds)
+reg.exe delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband" /f 2>$null | Out-Null
+
+# Search = Hide (plus cache)
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "SearchboxTaskbarMode"      /t REG_DWORD /d 0 /f | Out-Null
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "SearchboxTaskbarModeCache" /t REG_DWORD /d 1 /f | Out-Null
+
+# Task View off
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "ShowTaskViewButton" /t REG_DWORD /d 0 /f | Out-Null
+
+# Start: More pins
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_Layout" /t REG_DWORD /d 1 /f | Out-Null
+
+# Start: disable “recently added”
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Start" /v "ShowRecentList" /t REG_DWORD /d 0 /f | Out-Null
+
+# Start/Explorer/Jump lists: disable recents
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_TrackDocs" /t REG_DWORD /d 0 /f | Out-Null
+
+# Start: disable websites from browsing history (policy)
+reg.exe add "HKCU\Software\Policies\Microsoft\Windows\Explorer" /v "HideRecommendedPersonalizedSites" /t REG_DWORD /d 1 /f | Out-Null
+
+# Start: disable “tips/shortcuts/new apps”
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_IrisRecommendations" /t REG_DWORD /d 0 /f | Out-Null
+
+# Start: disable account notifications
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "Start_AccountNotifications" /t REG_DWORD /d 0 /f | Out-Null
+
+# Explorer: compact view + file extensions
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "UseCompactMode" /t REG_DWORD /d 1 /f | Out-Null
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "HideFileExt"    /t REG_DWORD /d 0 /f | Out-Null
+
+# File Explorer: open to "This PC" (LaunchTo=1)
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "LaunchTo" /t REG_DWORD /d 1 /f | Out-Null
+
+# Theme: Windows (dark) – system + apps
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "AppsUseLightTheme"     /t REG_DWORD /d 0 /f | Out-Null
+reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "SystemUsesLightTheme" /t REG_DWORD /d 0 /f | Out-Null
+
+# Desktop: set dark Bloom wallpaper
+if (-not (Test-Path "C:\Windows\Web\4K\Wallpaper\Windows\img19_1920x1200.jpg")) {
+    throw "Wallpaper file not found: C:\Windows\Web\4K\Wallpaper\Windows\img19_1920x1200.jpg"
+}
+
+New-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name WallpaperStyle -PropertyType String -Value "10" -Force | Out-Null
+New-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name TileWallpaper   -PropertyType String -Value "0"  -Force | Out-Null
+
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+
+public class Params {
+    [DllImport("User32.dll", CharSet = CharSet.Unicode)]
+    public static extern int SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);
+}
+"@
+
+# SPI_SETDESKWALLPAPER = 0x0014, flags = 0x01 (update ini) + 0x02 (broadcast change) = 0x03
+[Params]::SystemParametersInfo(0x0014, 0, "C:\Windows\Web\4K\Wallpaper\Windows\img19_1920x1200.jpg", 0x03) | Out-Null
+
+# Apply changes: restart Explorer
+Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+Start-Sleep -Milliseconds 800
+Start-Process explorer.exe
 
 # Remove bloatware
 Get-AppxPackage -Name "Clipchamp.Clipchamp" | Remove-AppxPackage
